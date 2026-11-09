@@ -1,0 +1,5 @@
+# Copy to .devcontainerguard.yaml and adjust.
+ignore: []            # e.g. [DCG016]
+fail_on: warning      # info | warning | error | never
+severity: {}          # e.g. { DCG015: error }
+ignore_paths: []      # e.g. ["examples/**"]

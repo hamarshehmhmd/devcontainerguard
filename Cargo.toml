@@ -1,0 +1,27 @@
+[package]
+name = "devcontainerguard"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.88"
+description = "Fast single-binary security linter for devcontainer.json (and Dev Container Features), with SARIF and GitHub Actions output"
+license = "MIT"
+repository = "https://github.com/hamarshehmhmd/devcontainerguard"
+homepage = "https://github.com/hamarshehmhmd/devcontainerguard"
+readme = "README.md"
+authors = ["Mohammad Hamarsheh"]
+keywords = ["devcontainer", "linter", "security", "sarif", "dev-containers"]
+categories = ["command-line-utilities", "development-tools"]
+exclude = [".github/", "tests/fixtures/"]
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+globset = "0.4"
+regex = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_yaml = "0.9"
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true

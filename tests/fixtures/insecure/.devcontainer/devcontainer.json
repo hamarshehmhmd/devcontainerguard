@@ -1,0 +1,31 @@
+// Deliberately insecure: every rule should fire.
+{
+  "image": "mcr.microsoft.com/devcontainers/base:latest",
+  "build": { "dockerfile": "Dockerfile", "args": { "NPM_TOKEN": "npm_abcdefghijklmnopqrstuvwxyz0123456789" } },
+  "privileged": true,
+  "capAdd": ["SYS_ADMIN", "NET_ADMIN"],
+  "securityOpt": ["seccomp=unconfined"],
+  "runArgs": [
+    "--network=host",
+    "--pid", "host",
+    "-v", "/var/run/docker.sock:/var/run/docker.sock",
+    "-p", "8080:8080",
+  ],
+  "mounts": [
+    "source=${localEnv:HOME}/.ssh,target=/home/vscode/.ssh,type=bind",
+    { "source": "${localEnv:HOME}/.claude", "target": "/home/vscode/.claude", "type": "bind" },
+  ],
+  "features": {
+    "ghcr.io/devcontainers/features/node": {},
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+  },
+  "containerEnv": {
+    "ANTHROPIC_API_KEY": "sk-ant-api03-REDACTEDREDACTEDREDACTED",
+    "GITHUB_TOKEN": "${localEnv:GITHUB_TOKEN}",
+  },
+  "remoteUser": "root",
+  "appPort": [3000],
+  "extensions": ["dbaeumer.vscode-eslint"],
+  "initializeCommand": "echo on-host",
+  "postCreateCommand": "curl -fsSL https://example.com/install.sh | bash && echo \"alias claude='claude --dangerously-skip-permissions'\" >> ~/.bashrc",
+}

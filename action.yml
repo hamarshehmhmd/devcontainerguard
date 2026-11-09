@@ -1,0 +1,67 @@
+name: devcontainerguard
+description: Lint devcontainer.json and Dev Container Features for security and AI-agent sandbox risks
+author: hamarshehmhmd
+branding:
+  icon: shield
+  color: blue
+inputs:
+  paths:
+    description: Space-separated files or directories to lint (default repository root)
+    required: false
+    default: "."
+  format:
+    description: Output format (human, json, sarif, github)
+    required: false
+    default: github
+  fail-on:
+    description: Minimum severity that fails the step (info, warning, error, never)
+    required: false
+    default: warning
+  version:
+    description: devcontainerguard release tag to install
+    required: false
+    default: latest
+  sarif-file:
+    description: If set, also write SARIF to this path (upload it with github/codeql-action/upload-sarif)
+    required: false
+    default: ""
+runs:
+  using: composite
+  steps:
+    - name: Install devcontainerguard
+      shell: bash
+      env:
+        VERSION: ${{ inputs.version }}
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        set -euo pipefail
+        case "${RUNNER_OS}-${RUNNER_ARCH}" in
+          Linux-X64) t=x86_64-unknown-linux-gnu; ext=tar.gz ;;
+          Linux-ARM64) t=aarch64-unknown-linux-gnu; ext=tar.gz ;;
+          macOS-X64) t=x86_64-apple-darwin; ext=tar.gz ;;
+          macOS-ARM64) t=aarch64-apple-darwin; ext=tar.gz ;;
+          Windows-X64) t=x86_64-pc-windows-msvc; ext=zip ;;
+          *) echo "unsupported runner ${RUNNER_OS}-${RUNNER_ARCH}"; exit 1 ;;
+        esac
+        if [ "$VERSION" = "latest" ]; then
+          VERSION=$(gh release view -R hamarshehmhmd/devcontainerguard --json tagName -q .tagName)
+        fi
+        dir="$RUNNER_TEMP/devcontainerguard"
+        mkdir -p "$dir"
+        gh release download "$VERSION" -R hamarshehmhmd/devcontainerguard -p "devcontainerguard-$VERSION-$t.$ext" -D "$dir" --clobber
+        cd "$dir"
+        if [ "$ext" = zip ]; then 7z x -y "*.zip" >/dev/null; else tar xzf *.tar.gz; fi
+        echo "$dir/devcontainerguard-$VERSION-$t" >> "$GITHUB_PATH"
+    - name: Run devcontainerguard
+      shell: bash
+      env:
+        PATHS: ${{ inputs.paths }}
+        FORMAT: ${{ inputs.format }}
+        FAIL_ON: ${{ inputs.fail-on }}
+        SARIF: ${{ inputs.sarif-file }}
+      run: |
+        set -uo pipefail
+        if [ -n "$SARIF" ]; then
+          devcontainerguard --format sarif --fail-on never $PATHS > "$SARIF" || true
+        fi
+        devcontainerguard --format "$FORMAT" --fail-on "$FAIL_ON" $PATHS

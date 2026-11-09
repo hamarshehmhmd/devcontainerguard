@@ -1,0 +1,16 @@
+{
+  // Modelled on the Claude Code reference devcontainer: firewall needs NET_ADMIN/NET_RAW.
+  "name": "Claude Code Sandbox",
+  "build": { "dockerfile": "Dockerfile", "args": { "CLAUDE_CODE_VERSION": "latest" } },
+  "runArgs": ["--cap-add=NET_ADMIN", "--cap-add=NET_RAW"],
+  "mounts": [
+    "source=claude-code-bashhistory-${devcontainerId},target=/commandhistory,type=volume",
+    "source=claude-code-config-${devcontainerId},target=/home/node/.claude,type=volume",
+  ],
+  "containerEnv": { "CLAUDE_CONFIG_DIR": "/home/node/.claude" },
+  "remoteUser": "node",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=delegated",
+  "workspaceFolder": "/workspace",
+  "postStartCommand": "sudo /usr/local/bin/init-firewall.sh",
+  "postAttachCommand": "claude --dangerously-skip-permissions",
+}

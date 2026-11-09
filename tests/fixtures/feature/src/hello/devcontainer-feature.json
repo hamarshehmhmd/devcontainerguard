@@ -1,0 +1,8 @@
+{
+  "name": "Hello",
+  "privileged": true,
+  "capAdd": ["SYS_MODULE"],
+  "mounts": [{ "source": "/var/run/docker.sock", "target": "/var/run/docker-host.sock", "type": "bind" }],
+  "dependsOn": { "ghcr.io/devcontainers/features/common-utils:latest": {} },
+  "containerEnv": { "DB_PASSWORD": "hunter2" },
+}

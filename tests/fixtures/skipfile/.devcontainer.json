@@ -1,0 +1,2 @@
+// devcontainerguard-ignore-file
+{ "privileged": true }

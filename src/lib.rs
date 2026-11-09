@@ -202,7 +202,7 @@ pub fn discover(paths: &[PathBuf]) -> std::io::Result<Vec<PathBuf>> {
 }
 
 fn walk(dir: &Path, out: &mut Vec<PathBuf>) -> std::io::Result<()> {
-    let mut entries: Vec<_> = std::fs::read_dir(dir)?.filter_map(Result::ok).collect();
+    let mut entries = std::fs::read_dir(dir)?.collect::<Result<Vec<_>, _>>()?;
     entries.sort_by_key(|e| e.file_name());
     for e in entries {
         let path = e.path();

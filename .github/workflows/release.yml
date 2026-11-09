@@ -23,15 +23,18 @@ jobs:
       - run: cargo build --release --locked --target ${{ matrix.target }}
       - name: Package
         shell: bash
+        env:
+          REF_NAME: ${{ github.ref_name }}
+          TARGET: ${{ matrix.target }}
         run: |
-          name=devcontainerguard-${{ github.ref_name }}-${{ matrix.target }}
+          name="devcontainerguard-${REF_NAME}-${TARGET}"
           mkdir "$name"
           cp README.md LICENSE "$name/"
-          if [[ "${{ matrix.target }}" == *windows* ]]; then
-            cp target/${{ matrix.target }}/release/devcontainerguard.exe "$name/"
+          if [[ "$TARGET" == *windows* ]]; then
+            cp "target/$TARGET/release/devcontainerguard.exe" "$name/"
             7z a "$name.zip" "$name" >/dev/null
           else
-            cp target/${{ matrix.target }}/release/devcontainerguard "$name/"
+            cp "target/$TARGET/release/devcontainerguard" "$name/"
             tar czf "$name.tar.gz" "$name"
           fi
       - uses: actions/upload-artifact@v4

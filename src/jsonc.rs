@@ -173,6 +173,9 @@ impl Parser {
             self.line_has_code = false;
         } else {
             self.col += 1;
+            if !c.is_whitespace() {
+                self.line_has_code = true;
+            }
         }
         Some(c)
     }
@@ -185,6 +188,7 @@ impl Parser {
                 Some('/') => {
                     let start = self.pos();
                     let own_line = !self.line_has_code;
+                    let had_code = self.line_has_code;
                     match self.chars.get(self.i + 1) {
                         Some('/') => {
                             self.bump();
@@ -202,6 +206,7 @@ impl Parser {
                                 text,
                                 own_line,
                             });
+                            self.line_has_code = had_code;
                         }
                         Some('*') => {
                             self.bump();
@@ -217,11 +222,13 @@ impl Parser {
                                     Some(c) => text.push(c),
                                 }
                             }
+                            let same_line = self.line == start.line;
                             self.comments.push(Comment {
                                 pos: start,
                                 text,
                                 own_line,
                             });
+                            self.line_has_code = same_line && had_code;
                         }
                         _ => return Err(self.err("unexpected '/'")),
                     }
@@ -310,7 +317,10 @@ impl Parser {
                         if (0xD800..0xDC00).contains(&cp) {
                             if self.bump() == Some('\\') && self.bump() == Some('u') {
                                 let lo = self.hex4()?;
-                                let c = 0x10000 + ((cp - 0xD800) << 10) + (lo.wrapping_sub(0xDC00));
+                                if !(0xDC00..=0xDFFF).contains(&lo) {
+                                    return Err(self.err("invalid low surrogate"));
+                                }
+                                let c = 0x10000 + ((cp - 0xD800) << 10) + (lo - 0xDC00);
                                 out.push(char::from_u32(c).unwrap_or('\u{fffd}'));
                             } else {
                                 return Err(self.err("invalid surrogate pair"));
@@ -428,6 +438,23 @@ mod tests {
         assert_eq!(e.pos.line, 2);
         assert!(parse("{\"a\": 1} x").is_err());
         assert!(parse("/* open").is_err());
+    }
+
+    #[test]
+    fn trailing_comments_after_punctuation_are_not_own_line() {
+        let d = parse("{\n  \"a\": [1], // t1\n  \"b\": {}, /* t2 */\n  // own\n  \"c\": 1\n}")
+            .unwrap();
+        let own: Vec<bool> = d.comments.iter().map(|c| c.own_line).collect();
+        assert_eq!(own, vec![false, false, true]);
+    }
+
+    #[test]
+    fn rejects_bad_surrogates() {
+        assert!(parse(r#""\ud800\u0041""#).is_err());
+        assert_eq!(
+            parse(r#""\ud83d\ude00""#).unwrap().root.as_str(),
+            Some("\u{1F600}")
+        );
     }
 
     #[test]

@@ -9,8 +9,9 @@
 
 Dev containers are the default sandbox for Claude Code, Codex, Gemini CLI and Copilot agents, but one line in `devcontainer.json` (`--privileged`, a mounted `docker.sock`, `~/.ssh` or `~/.claude` bind mount, `--network=host`) turns that sandbox into a door to your laptop. `devcontainerguard` catches those lines before they are merged.
 
+Given this `.devcontainer/devcontainer.json`:
+
 ```jsonc
-// .devcontainer/devcontainer.json
 {
   "image": "mcr.microsoft.com/devcontainers/javascript-node:latest",
   "runArgs": ["--network=host"],
@@ -41,7 +42,7 @@ $ devcontainerguard
 - **Security rules, not just schema.** JSON Schema and `devcontainer read-configuration` tell you whether the file is valid; they do not tell you it mounts your home directory. 20 rules with stable IDs ([`DCG001`…`DCG020`](docs/rules.md)).
 - **AI-agent aware.** Flags `--dangerously-skip-permissions` / `--yolo` *only when combined with host access* (DCG017), host agent-credential mounts (DCG018) and firewall capabilities (DCG019). The [Claude Code reference devcontainer](https://github.com/anthropics/claude-code/tree/main/.devcontainer) passes with a single info note.
 - **Real JSONC.** Comments, trailing commas, exact `line:column` for every finding.
-- **One static Rust binary.** No Node, Python or Docker needed. Lints a whole monorepo in milliseconds.
+- **One self-contained Rust binary.** No Node, Python or Docker needed. Lints a whole monorepo in milliseconds.
 - **CI-native output.** Human, JSON, **SARIF** (GitHub code scanning) and **GitHub annotations**; a ready-made [GitHub Action](#github-actions).
 - **Predictable exit codes.** `0` clean, `1` findings at or above `--fail-on`, `2` usage or parse error.
 
@@ -154,7 +155,7 @@ jobs:
           sarif_file: devcontainerguard.sarif
 ```
 
-Inputs: `paths` (default: repository root), `format` (default `github`), `fail-on` (default `warning`), `version` (default `latest`), `sarif-file` (optional). Works on Linux, macOS and Windows runners.
+Inputs: `paths` (space-separated; default: repository root), `format` (default `github`), `fail-on` (default `warning`), `version` (default `latest`), `sarif-file` (optional). Works on Linux, macOS and Windows runners.
 
 ## Related projects
 

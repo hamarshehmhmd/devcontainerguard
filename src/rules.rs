@@ -396,7 +396,7 @@ static SECRET_NAME_EXEMPT: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r"(?i)_(url|uri|path|file|dir|host|endpoint|name|user|username|id)$").unwrap()
 });
 static SECRET_VALUE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(ghp_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,}|gh[ousr]_[A-Za-z0-9]{30,}|sk-ant-[A-Za-z0-9_-]{20,}|sk-(proj-)?[A-Za-z0-9_-]{32,}|AKIA[0-9A-Z]{16}|xox[baprs]-[A-Za-z0-9-]{10,}|glpat-[A-Za-z0-9_-]{20}|AIza[0-9A-Za-z_-]{35}|npm_[A-Za-z0-9]{36})").unwrap()
+    Regex::new(r"\b(ghp_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,}|gh[ousr]_[A-Za-z0-9]{30,}|sk-ant-[A-Za-z0-9_-]{20,}|sk-(proj-)?[A-Za-z0-9_-]{32,}|AKIA[0-9A-Z]{16}|xox[baprs]-[A-Za-z0-9-]{10,}|glpat-[A-Za-z0-9_-]{20}|AIza[0-9A-Za-z_-]{35}|npm_[A-Za-z0-9]{36})").unwrap()
 });
 
 fn check_secret(ctx: &mut Ctx, node: &Node, where_: &str, name: &str, value: &str) {
